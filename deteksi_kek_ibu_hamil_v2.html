@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BumilCare — Deteksi KEK Ibu Hamil</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blush: #FFE8EF;
+    --rose: #F4A7B9;
+    --rose-deep: #E07A9B;
+    --mint: #D4F4E2;
+    --mint-deep: #4CAF7D;
+    --peach: #FFDCC8;
+    --peach-deep: #F4895B;
+    --lavender: #EAE4FF;
+    --lavender-deep: #9B7FD4;
+    --cream: #FFF9F4;
+    --text-dark: #3D2B3D;
+    --text-mid: #7B5E7B;
+    --text-light: #B09AB0;
+    --white: #FFFFFF;
+    --shadow: 0 8px 32px rgba(180,100,140,0.12);
+    --shadow-card: 0 4px 20px rgba(180,100,140,0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Decorative bg blobs ── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -120px; right: -120px;
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, #FFD6E7 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0; pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; left: -100px;
+    width: 380px; height: 380px;
+    background: radial-gradient(circle, #D4F4E2 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0; pointer-events: none;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+    position: relative; z-index: 1;
+  }
+
+  /* ── Pages ── */
+  .page { display: none; animation: fadeUp .45s ease; }
+  .page.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ══════════════════════ PAGE 1 — HOME ══════════════════════ */
+  .home-header {
+    text-align: center;
+    padding: 36px 0 20px;
+  }
+  .logo-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--white);
+    border: 2px solid var(--rose);
+    border-radius: 50px;
+    padding: 6px 18px;
+    font-size: 13px; font-weight: 800;
+    color: var(--rose-deep);
+    margin-bottom: 24px;
+    letter-spacing: .5px;
+  }
+  .logo-badge span { font-size: 18px; }
+
+  .home-title {
+    font-family: 'Lora', serif;
+    font-size: 34px; font-weight: 600;
+    color: var(--text-dark);
+    line-height: 1.25;
+    margin-bottom: 12px;
+  }
+  .home-title em { color: var(--rose-deep); font-style: italic; }
+
+  .home-sub {
+    font-size: 16px; color: var(--text-mid);
+    line-height: 1.6; max-width: 420px; margin: 0 auto 32px;
+  }
+
+  .hero-illustration {
+    width: 220px; height: 220px;
+    margin: 0 auto 32px;
+    position: relative;
+  }
+  .hero-illustration svg { width: 100%; height: 100%; }
+
+  .info-cards {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px; margin-bottom: 32px;
+  }
+  .info-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 18px 16px;
+    box-shadow: var(--shadow-card);
+    text-align: center;
+    transition: transform .2s;
+  }
+  .info-card:hover { transform: translateY(-3px); }
+  .info-card .ic-icon { font-size: 30px; margin-bottom: 8px; }
+  .info-card .ic-title { font-size: 13px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+  .info-card .ic-desc { font-size: 12px; color: var(--text-mid); line-height: 1.4; }
+
+  /* ══════════════════════ PAGE 2 — INPUT ══════════════════════ */
+  .section-title {
+    font-family: 'Lora', serif;
+    font-size: 24px; font-weight: 600;
+    color: var(--text-dark); margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 14px; color: var(--text-mid); margin-bottom: 24px;
+  }
+
+  .progress-bar {
+    background: #EEE6EE;
+    border-radius: 100px;
+    height: 8px; margin-bottom: 32px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, var(--rose), var(--rose-deep));
+    transition: width .5s ease;
+  }
+
+  .form-section {
+    background: var(--white);
+    border-radius: 24px;
+    padding: 24px 22px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 18px;
+  }
+  .form-section-title {
+    font-size: 13px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--rose-deep); margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .form-section-title::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--rose) 0%, transparent 100%);
+  }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block; font-size: 14px; font-weight: 700;
+    color: var(--text-dark); margin-bottom: 6px;
+  }
+  .form-group .hint {
+    font-size: 12px; color: var(--text-light);
+    font-weight: 400; margin-left: 4px;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #EDE0ED;
+    border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px; font-weight: 600;
+    color: var(--text-dark);
+    background: var(--cream);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    -webkit-appearance: none;
+  }
+  .form-input:focus, .form-select:focus {
+    border-color: var(--rose-deep);
+    box-shadow: 0 0 0 3px rgba(224,122,155,0.15);
+    background: var(--white);
+  }
+
+  .input-unit {
+    position: relative;
+  }
+  .input-unit .form-input { padding-right: 52px; }
+  .input-unit .unit-label {
+    position: absolute; right: 16px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px; font-weight: 700; color: var(--text-light);
+  }
+
+  .radio-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .radio-item { position: relative; }
+  .radio-item input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .radio-item label {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 2px solid #EDE0ED;
+    border-radius: 50px;
+    font-size: 13px; font-weight: 700;
+    color: var(--text-mid); cursor: pointer;
+    transition: all .2s;
+    background: var(--cream);
+  }
+  .radio-item input:checked + label {
+    background: var(--blush);
+    border-color: var(--rose-deep);
+    color: var(--rose-deep);
+  }
+
+  .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+  .check-item { position: relative; }
+  .check-item input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .check-item label {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border: 2px solid #EDE0ED;
+    border-radius: 12px;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-mid); cursor: pointer;
+    transition: all .2s;
+    background: var(--cream);
+  }
+  .check-item label::before {
+    content: ''; width: 18px; height: 18px; flex-shrink: 0;
+    border: 2px solid #CCC; border-radius: 5px;
+    transition: all .2s;
+  }
+  .check-item input:checked + label {
+    background: var(--blush);
+    border-color: var(--rose-deep);
+    color: var(--rose-deep);
+  }
+  .check-item input:checked + label::before {
+    background: var(--rose-deep);
+    border-color: var(--rose-deep);
+    content: '✓'; color: white; font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ══════════════════════ PAGE 3 — RESULT ══════════════════════ */
+  .result-header {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+
+  .result-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    border-radius: 60px; padding: 12px 28px;
+    font-size: 18px; font-weight: 900;
+    letter-spacing: .3px;
+    margin: 20px 0 24px;
+    border: 3px solid;
+  }
+  .result-badge.danger {
+    background: #FFF0F3; color: #D63460;
+    border-color: #F4A7B9;
+  }
+  .result-badge.safe {
+    background: #F0FBF5; color: #2D8C5B;
+    border-color: #7ECBA1;
+  }
+
+  .result-illustration {
+    width: 180px; height: 180px;
+    margin: 0 auto 24px;
+  }
+  .result-illustration svg { width: 100%; height: 100%; }
+
+  .result-summary {
+    background: var(--white);
+    border-radius: 24px;
+    padding: 22px 20px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 16px;
+  }
+  .result-summary h3 {
+    font-size: 16px; font-weight: 800;
+    color: var(--text-dark); margin-bottom: 14px;
+  }
+
+  .indicator-row {
+    display: flex; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed #F0E6F0;
+    gap: 12px;
+  }
+  .indicator-row:last-child { border-bottom: none; }
+  .ind-label { font-size: 13px; font-weight: 700; color: var(--text-mid); flex: 1; }
+  .ind-value { font-size: 13px; font-weight: 800; color: var(--text-dark); }
+  .ind-status {
+    font-size: 11px; font-weight: 800;
+    padding: 3px 10px; border-radius: 50px;
+    flex-shrink: 0;
+  }
+  .ind-status.ok { background: var(--mint); color: #2D8C5B; }
+  .ind-status.warn { background: #FFF0F3; color: #D63460; }
+  .ind-status.neutral { background: var(--lavender); color: var(--lavender-deep); }
+
+  /* ══════════════════════ PAGE 4 — ADVICE ══════════════════════ */
+  .advice-card {
+    background: var(--white);
+    border-radius: 22px;
+    padding: 20px 20px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 14px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .advice-icon {
+    width: 46px; height: 46px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .advice-icon.rose { background: var(--blush); }
+  .advice-icon.mint { background: var(--mint); }
+  .advice-icon.peach { background: var(--peach); }
+  .advice-icon.lavender { background: var(--lavender); }
+  .advice-body h4 { font-size: 14px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+  .advice-body p { font-size: 13px; color: var(--text-mid); line-height: 1.55; }
+
+  /* ══════════════════════ BUTTONS ══════════════════════ */
+  .btn {
+    display: block; width: 100%;
+    padding: 16px;
+    border: none; border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px; font-weight: 800;
+    cursor: pointer; letter-spacing: .3px;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn:active { transform: scale(.97); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--rose-deep), #D45A8A);
+    color: var(--white);
+    box-shadow: 0 6px 20px rgba(224,122,155,0.40);
+  }
+  .btn-primary:hover { box-shadow: 0 8px 28px rgba(224,122,155,0.55); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: var(--white);
+    color: var(--rose-deep);
+    border: 2px solid var(--rose);
+    box-shadow: var(--shadow-card);
+    margin-top: 12px;
+  }
+  .btn-secondary:hover { background: var(--blush); }
+
+  .btn-outline-mint {
+    background: var(--white);
+    color: var(--mint-deep);
+    border: 2px solid var(--mint-deep);
+    margin-top: 12px;
+  }
+
+  /* ══════════════════════ MISC ══════════════════════ */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 800; color: var(--text-mid);
+    background: none; border: none; cursor: pointer;
+    margin-bottom: 16px; padding: 0;
+  }
+  .back-btn:hover { color: var(--rose-deep); }
+
+  .step-indicator {
+    display: flex; align-items: center; gap: 8px;
+    justify-content: center; margin-bottom: 20px;
+  }
+  .step-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #EDE0ED; transition: all .3s;
+  }
+  .step-dot.active { background: var(--rose-deep); transform: scale(1.3); }
+  .step-dot.done { background: var(--mint-deep); }
+
+  .divider {
+    border: none; border-top: 1px dashed #EDE0ED;
+    margin: 20px 0;
+  }
+
+  .disclaimer {
+    background: var(--lavender);
+    border-radius: 14px; padding: 14px 16px;
+    font-size: 12px; color: var(--lavender-deep);
+    line-height: 1.5; margin-top: 16px;
+    font-weight: 600;
+  }
+
+  .error-msg {
+    background: #FFF0F3;
+    border: 1.5px solid #F4A7B9;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px; font-weight: 700;
+    color: #D63460; margin-bottom: 16px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ══════════ PAGE 1: HOME ══════════ -->
+  <div class="page active" id="page-home">
+    <div class="home-header">
+      <div class="logo-badge"><span>🌸</span> BumilCare</div>
+      <h1 class="home-title">Yuk, Cek <em>Kesehatan Gizi</em><br>Bumil Sekarang!</h1>
+      <p class="home-sub">Deteksi dini Kurang Energi Kronik (KEK) untuk ibu hamil yang lebih sehat dan bahagia.</p>
+    </div>
+
+    <!-- Hero illustration: pregnant woman -->
+    <div class="hero-illustration">
+      <svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background circle -->
+        <circle cx="110" cy="110" r="105" fill="#FFE8EF"/>
+        <!-- Decorative dots -->
+        <circle cx="30" cy="50" r="6" fill="#F4A7B9" opacity=".5"/>
+        <circle cx="195" cy="60" r="4" fill="#D4F4E2" opacity=".8"/>
+        <circle cx="25" cy="165" r="5" fill="#EAE4FF" opacity=".7"/>
+        <circle cx="190" cy="170" r="7" fill="#FFDCC8" opacity=".6"/>
+        <!-- Body -->
+        <ellipse cx="110" cy="145" rx="38" ry="50" fill="#F4A7B9"/>
+        <!-- Baby bump -->
+        <ellipse cx="118" cy="155" rx="22" ry="20" fill="#FFB8CE"/>
+        <!-- Torso -->
+        <rect x="83" y="110" width="54" height="40" rx="12" fill="#F4A7B9"/>
+        <!-- Neck -->
+        <rect x="103" y="92" width="14" height="22" rx="7" fill="#FFDCC8"/>
+        <!-- Head -->
+        <ellipse cx="110" cy="82" rx="26" ry="28" fill="#FFDCC8"/>
+        <!-- Hair -->
+        <path d="M84 72 Q88 44 110 44 Q132 44 136 72 Q128 58 110 58 Q92 58 84 72Z" fill="#8B5E3C"/>
+        <path d="M84 72 Q78 60 82 50 Q84 44 90 48 Q84 60 88 72Z" fill="#8B5E3C"/>
+        <path d="M136 72 Q142 60 138 50 Q136 44 130 48 Q136 60 132 72Z" fill="#8B5E3C"/>
+        <!-- Face -->
+        <circle cx="101" cy="80" r="3.5" fill="#6B3D1E" opacity=".8"/>
+        <circle cx="119" cy="80" r="3.5" fill="#6B3D1E" opacity=".8"/>
+        <path d="M103 90 Q110 96 117 90" stroke="#E07A9B" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <!-- Cheeks -->
+        <circle cx="97" cy="86" r="6" fill="#F4A7B9" opacity=".5"/>
+        <circle cx="123" cy="86" r="6" fill="#F4A7B9" opacity=".5"/>
+        <!-- Arms -->
+        <path d="M83 118 Q65 125 68 145" stroke="#FFDCC8" stroke-width="14" stroke-linecap="round"/>
+        <path d="M137 118 Q155 125 152 145" stroke="#FFDCC8" stroke-width="14" stroke-linecap="round"/>
+        <!-- Hands -->
+        <circle cx="68" cy="148" r="8" fill="#FFDCC8"/>
+        <circle cx="152" cy="148" r="8" fill="#FFDCC8"/>
+        <!-- Legs -->
+        <rect x="90" y="188" width="16" height="24" rx="8" fill="#E07A9B"/>
+        <rect x="114" y="188" width="16" height="24" rx="8" fill="#E07A9B"/>
+        <!-- Heart on belly -->
+        <path d="M111 152 Q108 148 104 150 Q100 153 104 158 L111 164 L118 158 Q122 153 118 150 Q114 148 111 152Z" fill="white" opacity=".8"/>
+      </svg>
+    </div>
+
+    <div class="info-cards">
+      <div class="info-card">
+        <div class="ic-icon">🔬</div>
+        <div class="ic-title">Deteksi Akurat</div>
+        <div class="ic-desc">Berdasarkan parameter medis yang valid</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">💡</div>
+        <div class="ic-title">Saran Gizi</div>
+        <div class="ic-desc">Rekomendasi pola makan yang mudah diikuti</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">⚡</div>
+        <div class="ic-title">Cepat & Mudah</div>
+        <div class="ic-desc">Hanya 2 menit untuk hasil deteksi</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">💝</div>
+        <div class="ic-title">Untuk Bumil</div>
+        <div class="ic-desc">Dirancang khusus untuk ibu hamil</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="goTo('page-input')">Mulai Cek Sekarang 🌸</button>
+    <p style="text-align:center;font-size:12px;color:var(--text-light);margin-top:14px;">Gratis • Tidak perlu daftar • Data kamu aman 🔒</p>
+  </div>
+
+  <!-- ══════════ PAGE 2: INPUT ══════════ -->
+  <div class="page" id="page-input">
+    <button class="back-btn" onclick="goTo('page-home')">← Kembali</button>
+
+    <div class="step-indicator">
+      <div class="step-dot active" id="sd1"></div>
+      <div class="step-dot" id="sd2"></div>
+      <div class="step-dot" id="sd3"></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:33%"></div></div>
+
+    <h2 class="section-title">Data Diri & Fisik</h2>
+    <p class="section-sub">Isi datamu dengan jujur ya, Bunda 💕 Tidak ada jawaban yang salah!</p>
+
+    <div id="error-msg" class="error-msg">⚠️ Mohon isi semua data yang diperlukan ya, Bunda!</div>
+
+    <!-- Section 0: Data Diri -->
+    <div class="form-section">
+      <div class="form-section-title">👤 Data Diri</div>
+
+      <div class="form-group">
+        <label>Nama Lengkap</label>
+        <input type="text" id="nama" class="form-input" placeholder="cth: Siti Rahayu">
+      </div>
+
+      <div class="form-group">
+        <label>Tanggal Lahir</label>
+        <input type="date" id="tgl_lahir" class="form-input" max="">
+      </div>
+    </div>
+
+    <!-- Section 1: Data Fisik -->
+    <div class="form-section">
+      <div class="form-section-title">📏 Data Fisik</div>
+
+      <div class="form-group">
+        <label>Tinggi Badan <span class="hint">(cm)</span></label>
+        <div class="input-unit">
+          <input type="number" id="tb" class="form-input" placeholder="cth: 158" min="120" max="200">
+          <span class="unit-label">cm</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Berat Badan Sebelum Hamil <span class="hint">(kg)</span></label>
+        <div class="input-unit">
+          <input type="number" id="bb_sebelum" class="form-input" placeholder="cth: 52" min="30" max="150" step="0.1">
+          <span class="unit-label">kg</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Berat Badan Saat Ini <span class="hint">(kg)</span></label>
+        <div class="input-unit">
+          <input type="number" id="bb_sekarang" class="form-input" placeholder="cth: 55" min="30" max="150" step="0.1">
+          <span class="unit-label">kg</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Lingkar Lengan Atas (LiLA) <span class="hint">(cm)</span></label>
+        <div class="input-unit">
+          <input type="number" id="lila" class="form-input" placeholder="cth: 24" min="10" max="50" step="0.1">
+          <span class="unit-label">cm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Usia Kehamilan -->
+    <div class="form-section">
+      <div class="form-section-title">🤰 Kehamilan</div>
+
+      <div class="form-group">
+        <label>Usia Kehamilan Saat Ini <span class="hint">(minggu)</span></label>
+        <div class="input-unit">
+          <input type="number" id="usia_kehamilan" class="form-input" placeholder="cth: 20" min="1" max="42">
+          <span class="unit-label">mgg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Pola Makan -->
+    <div class="form-section">
+      <div class="form-section-title">🥗 Pola Makan</div>
+
+      <div class="form-group">
+        <label>Berapa kali makan dalam sehari?</label>
+        <div class="radio-group">
+          <div class="radio-item">
+            <input type="radio" name="frek_makan" id="fm1" value="1">
+            <label for="fm1">1 kali</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="frek_makan" id="fm2" value="2">
+            <label for="fm2">2 kali</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="frek_makan" id="fm3" value="3">
+            <label for="fm3">3 kali</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="frek_makan" id="fm4" value="4">
+            <label for="fm4">> 3 kali</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Seberapa sering konsumsi protein (daging, telur, tahu, tempe)?</label>
+        <div class="radio-group">
+          <div class="radio-item">
+            <input type="radio" name="frek_protein" id="fp1" value="jarang">
+            <label for="fp1">Jarang (&lt;3x/mgg)</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="frek_protein" id="fp2" value="cukup">
+            <label for="fp2">Cukup (3–5x/mgg)</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="frek_protein" id="fp3" value="sering">
+            <label for="fp3">Sering (tiap hari)</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Berapa porsi makan setiap kali makan?</label>
+        <div class="radio-group">
+          <div class="radio-item">
+            <input type="radio" name="porsi" id="ps1" value="kurang">
+            <label for="ps1">Kurang dari 1 porsi</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="porsi" id="ps2" value="cukup">
+            <label for="ps2">1 porsi</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="porsi" id="ps3" value="lebih">
+            <label for="ps3">Lebih dari 1 porsi</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Makanan apa yang sering dikonsumsi? <span class="hint">(pilih semua yang sesuai)</span></label>
+        <div class="checkbox-group">
+          <div class="check-item">
+            <input type="checkbox" id="mk1" value="junkfood">
+            <label for="mk1">Junk food / fast food</label>
+          </div>
+          <div class="check-item">
+            <input type="checkbox" id="mk2" value="ultrapros">
+            <label for="mk2">Makanan ultra-proses (mie instan, sosis, nugget)</label>
+          </div>
+          <div class="check-item">
+            <input type="checkbox" id="mk3" value="gulasaltminyak">
+            <label for="mk3">Tinggi gula, garam, atau minyak</label>
+          </div>
+          <div class="check-item">
+            <input type="checkbox" id="mk4" value="sayur">
+            <label for="mk4">Sayur dan buah segar</label>
+          </div>
+          <div class="check-item">
+            <input type="checkbox" id="mk5" value="protein">
+            <label for="mk5">Sumber protein bergizi (daging, ikan, telur, kacang)</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="hitungHasil()">Lihat Hasil Deteksi →</button>
+  </div>
+
+  <!-- ══════════ PAGE 3: RESULT ══════════ -->
+  <div class="page" id="page-result">
+    <button class="back-btn" onclick="goTo('page-input')">← Ubah Data</button>
+
+    <div class="result-header">
+      <p style="font-size:13px;color:var(--text-light);font-weight:700;">Hasil Deteksi KEK</p>
+      <h2 class="section-title" style="margin-top:4px;" id="result-title">—</h2>
+      <div class="result-badge" id="result-badge">—</div>
+    </div>
+
+    <!-- Result illustration -->
+    <div class="result-illustration" id="result-illustration"></div>
+
+    <p style="text-align:center;font-size:14px;color:var(--text-mid);line-height:1.6;margin-bottom:20px;" id="result-desc">—</p>
+
+    <!-- Indicator breakdown -->
+    <div class="result-summary">
+      <h3>🔍 Rincian Indikator Kesehatanmu</h3>
+      <div id="indicator-list"></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="goTo('page-advice')" id="btn-saran">Lihat Saran Untukmu 💝</button>
+    <button class="btn btn-secondary" onclick="reset()">Mulai Ulang</button>
+
+    <div class="disclaimer">
+      ⚠️ Hasil ini bersifat informatif dan tidak menggantikan diagnosis tenaga kesehatan. Selalu konsultasikan kondisimu ke bidan atau dokter kandungan ya, Bunda!
+    </div>
+  </div>
+
+  <!-- ══════════ PAGE 4: ADVICE ══════════ -->
+  <div class="page" id="page-advice">
+    <button class="back-btn" onclick="goTo('page-result')">← Lihat Hasil</button>
+
+    <h2 class="section-title">Saran untuk Bunda 💕</h2>
+    <p class="section-sub" id="advice-subtitle">—</p>
+
+    <div id="advice-list"></div>
+
+    <div class="disclaimer">
+      💜 Ingat, setiap langkah kecil menuju gizi yang baik adalah hadiah terbaik untuk si kecil. Kamu bisa, Bunda!
+    </div>
+
+    <button class="btn btn-outline-mint" onclick="reset()" style="display:block;width:100%;padding:16px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;margin-top:20px;background:var(--white);color:var(--mint-deep);border:2px solid var(--mint-deep);">
+      🏠 Kembali ke Halaman Utama
+    </button>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ── Set max date for date of birth ──
+document.getElementById('tgl_lahir').max = new Date().toISOString().split('T')[0];
+
+// ── Navigation ──
+function goTo(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function reset() {
+  document.getElementById('page-input').querySelectorAll('input').forEach(i => {
+    if (i.type === 'checkbox' || i.type === 'radio') i.checked = false;
+    else i.value = '';
+  });
+  goTo('page-home');
+}
+
+// ── Calculation ──
+function hitungHasil() {
+  const nama = document.getElementById('nama').value.trim();
+  const tgl_lahir = document.getElementById('tgl_lahir').value;
+  const tb = parseFloat(document.getElementById('tb').value);
+  const bb_sbl = parseFloat(document.getElementById('bb_sebelum').value);
+  const bb_skr = parseFloat(document.getElementById('bb_sekarang').value);
+  const lila = parseFloat(document.getElementById('lila').value);
+  const usia_keh = parseInt(document.getElementById('usia_kehamilan').value);
+  const frek_makan = document.querySelector('input[name="frek_makan"]:checked');
+  const frek_protein = document.querySelector('input[name="frek_protein"]:checked');
+  const porsi = document.querySelector('input[name="porsi"]:checked');
+  const errEl = document.getElementById('error-msg');
+
+  if (!nama || !tgl_lahir || !tb || !bb_sbl || !bb_skr || !lila || !usia_keh || !frek_makan || !frek_protein || !porsi) {
+    errEl.classList.add('show');
+    window.scrollTo({top:0, behavior:'smooth'});
+    return;
+  }
+  errEl.classList.remove('show');
+
+  // Collected food types
+  const makanan = [...document.querySelectorAll('.check-item input:checked')].map(i => i.value);
+
+  // ── Parameter 1: IMT ──
+  const imt = bb_sbl / ((tb/100) ** 2);
+  const imt_kek = imt < 18.5;
+
+  // ── Parameter 2: Penambahan BB ──
+  const penambahan_bb = bb_skr - bb_sbl;
+  let bb_kek = false;
+  if (usia_keh <= 12) {
+    bb_kek = penambahan_bb < 0.5;
+  } else {
+    const minggu_sejak_t2 = usia_keh - 12;
+    const kenaikan_min = minggu_sejak_t2 * 0.5;
+    bb_kek = penambahan_bb < kenaikan_min;
+  }
+
+  // ── Parameter 3: LiLA ──
+  const lila_kek = lila < 23.5;
+
+  // ── Parameter 4: Pola Makan ──
+  const frekMakanVal = parseInt(frek_makan.value);
+  const frekMakanKek = frekMakanVal < 3;
+  const proteinKek = frek_protein.value === 'jarang';
+  const porsiKek = porsi.value === 'kurang';
+  const makanBuruk = makanan.some(m => ['junkfood','ultrapros','gulasaltminyak'].includes(m));
+  const polaMakanKek = frekMakanKek || proteinKek || porsiKek || makanBuruk;
+
+  // ── Skor KEK ──
+  const skor = [imt_kek, bb_kek, lila_kek, polaMakanKek].filter(Boolean).length;
+  const isKEK = skor >= 2; // ≥2 indikator positif = KEK
+
+  // ── Trimester label ──
+  let trimester = usia_keh <= 12 ? 'Trimester 1' : usia_keh <= 27 ? 'Trimester 2' : 'Trimester 3';
+
+  // ── Build indicators ──
+  window._isKEK = isKEK;
+  // ── Usia Ibu ──
+  const today = new Date();
+  const lahir = new Date(tgl_lahir);
+  let usia_ibu = today.getFullYear() - lahir.getFullYear();
+  const m = today.getMonth() - lahir.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < lahir.getDate())) usia_ibu--;
+
+  window._params = { nama, tgl_lahir, usia_ibu, imt, imt_kek, penambahan_bb, bb_kek, lila, lila_kek, polaMakanKek, frekMakanKek, proteinKek, porsiKek, makanBuruk, trimester, usia_keh, frek_makan: frekMakanVal, frek_protein: frek_protein.value, porsi: porsi.value, makanan };
+
+  renderResult(isKEK, skor);
+  goTo('page-result');
+}
+
+function renderResult(isKEK, skor) {
+  const p = window._params;
+
+  // ── Title & badge ──
+  document.getElementById('result-title').textContent = isKEK
+    ? `Bunda ${p.nama}, Perlu Perhatian Ekstra 💪`
+    : `Bunda ${p.nama} dalam Kondisi Baik! 🎉`;
+
+  const badge = document.getElementById('result-badge');
+  badge.className = 'result-badge ' + (isKEK ? 'danger' : 'safe');
+  badge.innerHTML = isKEK
+    ? '🔴 Terdeteksi Risiko KEK'
+    : '🟢 Tidak Terdeteksi KEK';
+
+  document.getElementById('result-desc').textContent = isKEK
+    ? `Berdasarkan ${skor} dari 4 indikator, Bunda berisiko mengalami Kurang Energi Kronik (KEK). Yuk, segera tingkatkan asupan gizi dan konsultasi ke tenaga kesehatan!`
+    : `Indikator gizi Bunda cukup baik! Terus pertahankan pola makan sehat dan rutin periksa ke bidan atau dokter kandungan ya. Semangat!`;
+
+  // ── Illustration ──
+  const illDiv = document.getElementById('result-illustration');
+  if (isKEK) {
+    illDiv.innerHTML = `
+      <svg viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="90" cy="90" r="85" fill="#FFF0F3"/>
+        <circle cx="90" cy="90" r="60" fill="#FFD6E0" opacity=".5"/>
+        <!-- Warning icon -->
+        <path d="M90 40 L140 125 L40 125 Z" fill="#F4A7B9" stroke="#D63460" stroke-width="3" stroke-linejoin="round"/>
+        <rect x="86" y="65" width="8" height="34" rx="4" fill="#D63460"/>
+        <circle cx="90" cy="110" r="4.5" fill="#D63460"/>
+        <!-- Small sad face -->
+        <circle cx="90" cy="155" r="18" fill="white"/>
+        <circle cx="84" cy="151" r="2.5" fill="#D63460"/>
+        <circle cx="96" cy="151" r="2.5" fill="#D63460"/>
+        <path d="M84 160 Q90 155 96 160" stroke="#D63460" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>`;
+  } else {
+    illDiv.innerHTML = `
+      <svg viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="90" cy="90" r="85" fill="#F0FBF5"/>
+        <circle cx="90" cy="90" r="60" fill="#D4F4E2" opacity=".6"/>
+        <!-- Checkmark circle -->
+        <circle cx="90" cy="85" r="40" fill="#7ECBA1"/>
+        <path d="M68 85 L82 100 L112 70" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Happy face -->
+        <circle cx="90" cy="153" r="18" fill="white"/>
+        <circle cx="84" cy="149" r="2.5" fill="#2D8C5B"/>
+        <circle cx="96" cy="149" r="2.5" fill="#2D8C5B"/>
+        <path d="M83 156 Q90 162 97 156" stroke="#2D8C5B" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <!-- Stars -->
+        <text x="22" y="60" font-size="18" opacity=".7">⭐</text>
+        <text x="136" y="60" font-size="14" opacity=".6">✨</text>
+      </svg>`;
+  }
+
+  // ── Indicators ──
+  const tgl_fmt = new Date(p.tgl_lahir).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+  const imt_label = `IMT Sebelum Hamil (${p.imt.toFixed(1)} kg/m²)`;
+  const bb_label = `Penambahan BB (+${p.penambahan_bb.toFixed(1)} kg) — ${p.trimester}`;
+  const lila_label = `LiLA (${p.lila} cm)`;
+
+  const inds = [
+    {label: 'Nama', value: p.nama, status: 'neutral', statusText: '👤 Data Diri'},
+    {label: 'Tanggal Lahir', value: `${tgl_fmt} (${p.usia_ibu} th)`, status: 'neutral', statusText: '📅 Data Diri'},
+    {label: imt_label, value: p.imt_kek ? 'Underweight' : 'Normal', status: p.imt_kek ? 'warn' : 'ok', statusText: p.imt_kek ? '⚠ Risiko' : '✓ Normal'},
+    {label: bb_label, value: p.bb_kek ? 'Kurang' : 'Cukup', status: p.bb_kek ? 'warn' : 'ok', statusText: p.bb_kek ? '⚠ Risiko' : '✓ Normal'},
+    {label: lila_label, value: p.lila_kek ? '< 23,5 cm' : '≥ 23,5 cm', status: p.lila_kek ? 'warn' : 'ok', statusText: p.lila_kek ? '⚠ Risiko' : '✓ Normal'},
+    {label: 'Pola Makan', value: p.polaMakanKek ? 'Perlu diperbaiki' : 'Baik', status: p.polaMakanKek ? 'warn' : 'ok', statusText: p.polaMakanKek ? '⚠ Risiko' : '✓ Normal'},
+  ];
+
+  document.getElementById('indicator-list').innerHTML = inds.map(i => `
+    <div class="indicator-row">
+      <span class="ind-label">${i.label}</span>
+      <span class="ind-value">${i.value}</span>
+      <span class="ind-status ${i.status}">${i.statusText}</span>
+    </div>`).join('');
+
+  renderAdvice(isKEK);
+}
+
+function renderAdvice(isKEK) {
+  const p = window._params;
+  document.getElementById('advice-subtitle').textContent = isKEK
+    ? `Jangan khawatir, Bunda ${p.nama}! Dengan langkah tepat, kondisi ini bisa diperbaiki 💪`
+    : `Pertahankan gaya hidup sehatmu ya, Bunda ${p.nama}! Berikut tips untuk tetap prima 🌟`;
+
+  const advices = isKEK ? [
+    {icon:'🥩', bg:'rose', title:'Tingkatkan Asupan Protein', text:'Konsumsi minimal 2–3 porsi protein per hari: daging ayam, ikan, telur, tahu, tempe, atau kacang-kacangan. Protein penting untuk pertumbuhan janin dan kesehatan Bunda.'},
+    {icon:'🍚', bg:'peach', title:'Makan Teratur 3× Sehari', text:'Usahakan makan pagi, siang, dan malam secara teratur. Bunda juga bisa menambahkan 1–2 snack sehat di antara waktu makan untuk memenuhi kebutuhan energi.'},
+    {icon:'🥦', bg:'mint', title:'Perbanyak Sayur & Buah', text:'Konsumsi aneka sayur warna-warni dan buah segar setiap hari. Kaya vitamin, mineral, dan serat yang mendukung kesehatan ibu dan perkembangan bayi.'},
+    {icon:'🏥', bg:'lavender', title:'Segera ke Tenaga Kesehatan', text:'Konsultasikan kondisi ini ke bidan atau dokter kandungan sesegera mungkin. Minta informasi tentang suplementasi (PMT, tablet besi, dll) yang sesuai kondisimu.'},
+    {icon:'❌', bg:'rose', title:'Kurangi Makanan Minim Gizi', text:'Batasi konsumsi junk food, mie instan, makanan kemasan tinggi gula/garam/minyak. Gantikan dengan makanan bergizi yang dimasak sendiri.'},
+    {icon:'💧', bg:'mint', title:'Cukupi Kebutuhan Cairan', text:'Minum minimal 8–10 gelas air putih per hari. Cairan cukup membantu penyerapan nutrisi dan menjaga kesehatan selama kehamilan.'},
+  ] : [
+    {icon:'🌟', bg:'mint', title:'Pertahankan Pola Makan Sehat', text:'Kamu sudah di jalur yang benar! Tetap jaga konsumsi makanan bergizi seimbang: karbohidrat, protein, lemak sehat, sayur, dan buah setiap hari.'},
+    {icon:'🤱', bg:'rose', title:'Rutin Periksa Kehamilan', text:'Tetap rutin kunjungi bidan atau dokter kandungan sesuai jadwal. Pemantauan berkala memastikan tumbuh kembang janin berjalan optimal.'},
+    {icon:'💊', bg:'lavender', title:'Konsumsi Suplemen Kehamilan', text:'Pastikan kamu rutin minum tablet tambah darah dan vitamin kehamilan yang diresepkan tenaga kesehatan untuk mencegah anemia dan defisiensi nutrisi.'},
+    {icon:'🏃', bg:'peach', title:'Aktivitas Fisik Ringan', text:'Lakukan olahraga ringan seperti jalan kaki 30 menit atau senam hamil secara rutin. Konsultasikan jenis aktivitas yang aman dengan doktermu.'},
+    {icon:'😴', bg:'mint', title:'Istirahat yang Cukup', text:'Tidur 7–9 jam per malam dan sempatkan istirahat siang. Kualitas tidur yang baik mendukung produksi hormon kehamilan dan pemulihan energi.'},
+  ];
+
+  document.getElementById('advice-list').innerHTML = advices.map(a => `
+    <div class="advice-card">
+      <div class="advice-icon ${a.bg}">${a.icon}</div>
+      <div class="advice-body">
+        <h4>${a.title}</h4>
+        <p>${a.text}</p>
+      </div>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>
